@@ -27,15 +27,15 @@ const AddDeviceScreen = () => {
   const [powerRating, setPowerRating] = useState('');
   const [dailyUsageHours, setDailyUsageHours] = useState('');
 
-  const handleAddDevice = (e: React.FormEvent) => {
+  const handleAddDevice = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!name || !powerRating || !dailyUsageHours) {
       toast.error('Please fill in all fields');
       return;
     }
 
-    addDevice({
+    const success = await addDevice({
       name,
       type: selectedType,
       powerRating: parseFloat(powerRating),
@@ -43,11 +43,13 @@ const AddDeviceScreen = () => {
       isOn: true,
     });
 
-    toast.success('Device added successfully!');
-    setShowForm(false);
-    setName('');
-    setPowerRating('');
-    setDailyUsageHours('');
+    if (success) {
+      toast.success('Device added successfully!');
+      setShowForm(false);
+      setName('');
+      setPowerRating('');
+      setDailyUsageHours('');
+    }
   };
 
   return (
@@ -65,8 +67,8 @@ const AddDeviceScreen = () => {
       <div className="p-6 space-y-6">
         {/* Add Device Button/Form */}
         {!showForm ? (
-          <Button 
-            onClick={() => setShowForm(true)} 
+          <Button
+            onClick={() => setShowForm(true)}
             className="w-full"
             variant="outline"
           >
@@ -87,11 +89,10 @@ const AddDeviceScreen = () => {
                         key={type}
                         type="button"
                         onClick={() => setSelectedType(type)}
-                        className={`p-3 rounded-xl border-2 transition-all ${
-                          selectedType === type 
-                            ? 'border-primary bg-primary/10' 
+                        className={`p-3 rounded-xl border-2 transition-all ${selectedType === type
+                            ? 'border-primary bg-primary/10'
                             : 'border-border hover:border-primary/50'
-                        }`}
+                          }`}
                       >
                         <span className="text-2xl block mb-1">{getDeviceIcon(type)}</span>
                         <span className="text-xs text-foreground">{label}</span>
@@ -145,7 +146,7 @@ const AddDeviceScreen = () => {
           <h2 className="text-lg font-bold text-foreground mb-3">Your Devices ({devices.length})</h2>
           <div className="space-y-3">
             {devices.map((device) => (
-              <Card 
+              <Card
                 key={device.id}
                 className="cursor-pointer hover:scale-[1.02] transition-transform"
                 onClick={() => navigate(`/device/${device.id}`)}

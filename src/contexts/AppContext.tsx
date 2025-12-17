@@ -8,9 +8,9 @@ interface AppContextType {
   setUser: (user: User | null) => void;
   devices: Device[];
   setDevices: React.Dispatch<React.SetStateAction<Device[]>>;
-  addDevice: (device: Omit<Device, 'id'>) => Promise<void>;
-  updateDevice: (id: string, updates: Partial<Device>) => Promise<void>;
-  deleteDevice: (id: string) => Promise<void>;
+  addDevice: (device: Omit<Device, 'id'>) => Promise<boolean>;
+  updateDevice: (id: string, updates: Partial<Device>) => Promise<boolean>;
+  deleteDevice: (id: string) => Promise<boolean>;
   notifications: Notification[];
   markNotificationRead: (id: string) => void;
   isAuthenticated: boolean;
@@ -91,8 +91,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     }
   };
 
-  const addDevice = async (device: Omit<Device, 'id'>) => {
-    if (!user) return;
+  const addDevice = async (device: Omit<Device, 'id'>): Promise<boolean> => {
+    if (!user) return false;
 
     try {
       const { data, error } = await supabase
@@ -130,15 +130,17 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
           usage: 0, // Initial usage
         });
 
-        toast.success('Device added successfully');
+        return true;
       }
+      return false;
     } catch (error: any) {
       console.error('Error adding device:', error);
       toast.error(error.message || 'Failed to add device');
+      return false;
     }
   };
 
-  const updateDevice = async (id: string, updates: Partial<Device>) => {
+  const updateDevice = async (id: string, updates: Partial<Device>): Promise<boolean> => {
     try {
       // Map frontend camelCase to DB snake_case
       const dbUpdates: any = {};
@@ -156,15 +158,15 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       if (error) throw error;
 
       setDevices(prev => prev.map(d => (d.id === id ? { ...d, ...updates } : d)));
-
-      // If updating usage, log it? (Optional, skipping for now to keep it simple)
+      return true;
     } catch (error: any) {
       console.error('Error updating device:', error);
       toast.error('Failed to update device');
+      return false;
     }
   };
 
-  const deleteDevice = async (id: string) => {
+  const deleteDevice = async (id: string): Promise<boolean> => {
     try {
       const { error } = await supabase
         .from('devices')
@@ -174,10 +176,11 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       if (error) throw error;
 
       setDevices(prev => prev.filter(d => d.id !== id));
-      toast.success('Device deleted');
+      return true;
     } catch (error: any) {
       console.error('Error deleting device:', error);
       toast.error('Failed to delete device');
+      return false;
     }
   };
 

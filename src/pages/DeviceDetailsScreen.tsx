@@ -14,7 +14,7 @@ const DeviceDetailsScreen = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { devices, updateDevice, deleteDevice } = useApp();
-  
+
   const device = devices.find(d => d.id === id);
   const [isEditing, setIsEditing] = useState(false);
   const [editName, setEditName] = useState(device?.name || '');
@@ -33,25 +33,32 @@ const DeviceDetailsScreen = () => {
   const dailyCost = calculateDailyCost(device);
   const monthlyCost = dailyCost * 30;
 
-  const handleSave = () => {
-    updateDevice(device.id, {
+  const handleSave = async () => {
+    const success = await updateDevice(device.id, {
       name: editName,
       powerRating: parseFloat(editPower),
       dailyUsageHours: parseFloat(editHours),
     });
-    setIsEditing(false);
-    toast.success('Device updated successfully!');
+
+    if (success) {
+      setIsEditing(false);
+      toast.success('Device updated successfully!');
+    }
   };
 
-  const handleDelete = () => {
-    deleteDevice(device.id);
-    toast.success('Device deleted');
-    navigate('/add-device');
+  const handleDelete = async () => {
+    const success = await deleteDevice(device.id);
+    if (success) {
+      toast.success('Device deleted');
+      navigate('/add-device');
+    }
   };
 
-  const handleToggle = (checked: boolean) => {
-    updateDevice(device.id, { isOn: checked });
-    toast.success(checked ? 'Device turned on' : 'Device turned off');
+  const handleToggle = async (checked: boolean) => {
+    const success = await updateDevice(device.id, { isOn: checked });
+    if (success) {
+      toast.success(checked ? 'Device turned on' : 'Device turned off');
+    }
   };
 
   return (
@@ -63,13 +70,13 @@ const DeviceDetailsScreen = () => {
             <ArrowLeft className="w-6 h-6 text-primary-foreground" />
           </button>
           <div className="flex items-center gap-3">
-            <button 
+            <button
               onClick={() => setIsEditing(!isEditing)}
               className="w-10 h-10 bg-primary-foreground/20 rounded-full flex items-center justify-center"
             >
               <Edit2 className="w-5 h-5 text-primary-foreground" />
             </button>
-            <button 
+            <button
               onClick={handleDelete}
               className="w-10 h-10 bg-destructive/20 rounded-full flex items-center justify-center"
             >
@@ -144,27 +151,27 @@ const DeviceDetailsScreen = () => {
               <>
                 <div>
                   <label className="text-sm text-muted-foreground">Device Name</label>
-                  <Input 
-                    value={editName} 
-                    onChange={(e) => setEditName(e.target.value)} 
+                  <Input
+                    value={editName}
+                    onChange={(e) => setEditName(e.target.value)}
                     className="mt-1"
                   />
                 </div>
                 <div>
                   <label className="text-sm text-muted-foreground">Power Rating (Watts)</label>
-                  <Input 
+                  <Input
                     type="number"
-                    value={editPower} 
-                    onChange={(e) => setEditPower(e.target.value)} 
+                    value={editPower}
+                    onChange={(e) => setEditPower(e.target.value)}
                     className="mt-1"
                   />
                 </div>
                 <div>
                   <label className="text-sm text-muted-foreground">Daily Usage (Hours)</label>
-                  <Input 
+                  <Input
                     type="number"
-                    value={editHours} 
-                    onChange={(e) => setEditHours(e.target.value)} 
+                    value={editHours}
+                    onChange={(e) => setEditHours(e.target.value)}
                     className="mt-1"
                   />
                 </div>

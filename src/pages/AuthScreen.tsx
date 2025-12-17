@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { useApp } from '@/contexts/AppContext';
 import { toast } from 'sonner';
-import { Mail, Lock, User, ArrowLeft } from 'lucide-react';
+import { Mail, Lock, User, ArrowLeft, Eye, EyeOff } from 'lucide-react';
 import logo from '@/assets/logo.png';
 
 const AuthScreen = () => {
@@ -13,6 +13,7 @@ const AuthScreen = () => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const { login, signup } = useApp();
@@ -21,25 +22,26 @@ const AuthScreen = () => {
     e.preventDefault();
     setIsLoading(true);
 
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 800));
-
-    if (isLogin) {
-      const success = login(email, password);
-      if (success) {
-        toast.success('Welcome back!');
-        navigate('/dashboard');
+    try {
+      if (isLogin) {
+        const { error } = await login(email, password);
+        if (!error) {
+          toast.success('Welcome back!');
+          navigate('/dashboard');
+        } else {
+          toast.error(error.message || 'Invalid credentials');
+        }
       } else {
-        toast.error('Invalid credentials');
+        const { error } = await signup(name, email, password);
+        if (!error) {
+          toast.success('Account created successfully! Please check your email.');
+          navigate('/dashboard');
+        } else {
+          toast.error(error.message || 'Failed to create account');
+        }
       }
-    } else {
-      const success = signup(name, email, password);
-      if (success) {
-        toast.success('Account created successfully!');
-        navigate('/dashboard');
-      } else {
-        toast.error('Please fill in all fields correctly');
-      }
+    } catch (err) {
+      toast.error('An unexpected error occurred');
     }
 
     setIsLoading(false);
@@ -47,7 +49,7 @@ const AuthScreen = () => {
 
   return (
     <div className="min-h-screen bg-background flex flex-col p-6">
-      <button 
+      <button
         onClick={() => navigate('/')}
         className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors mb-6"
       >
@@ -57,7 +59,7 @@ const AuthScreen = () => {
 
       <div className="flex-1 flex flex-col items-center justify-center">
         <img src={logo} alt="Logo" className="w-20 h-20 object-contain mb-6" />
-        
+
         <Card className="w-full max-w-sm border-0 shadow-elevated">
           <CardHeader className="text-center pb-2">
             <CardTitle className="text-2xl">{isLogin ? 'Welcome Back' : 'Create Account'}</CardTitle>
@@ -80,7 +82,7 @@ const AuthScreen = () => {
                   />
                 </div>
               )}
-              
+
               <div className="relative">
                 <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
                 <Input
@@ -96,14 +98,25 @@ const AuthScreen = () => {
               <div className="relative">
                 <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
                 <Input
-                  type="password"
+                  type={showPassword ? "text" : "password"}
                   placeholder="Password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="pl-12"
-                  minLength={4}
+                  className="pl-12 pr-10"
+                  minLength={6}
                   required
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                >
+                  {showPassword ? (
+                    <EyeOff className="w-4 h-4" />
+                  ) : (
+                    <Eye className="w-4 h-4" />
+                  )}
+                </button>
               </div>
 
               <Button type="submit" className="w-full" disabled={isLoading}>

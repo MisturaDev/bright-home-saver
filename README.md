@@ -1,4 +1,4 @@
-# Bright Home Energy Saver ⚡🏠
+# Bright Home Energy Saver 
 
 Bright Home Energy Saver is a smart home project designed to help users monitor and optimize their energy consumption. It provides insights into energy usage, promotes efficient energy practices and helps reduce electricity costs all in a sleek, easy-to-use interface.
 
@@ -9,7 +9,7 @@ Bright Home Energy Saver is a smart home project designed to help users monitor 
 
 - **Dashboard with charts**: Visualize your energy usage over time.
 
-- **Efficiency tips?**: Get recommendations to save energy and reduce bills.
+- **Efficiency tips**: Get recommendations to save energy and reduce bills.
 
 - **Responsive design**: Works seamlessly on desktop and mobile.
 
@@ -53,20 +53,18 @@ Bright Home Energy Saver is a smart home project designed to help users monitor 
    npm run dev
    ```
 Open http://localhost:5173 in your browser to view the app.
+
  
 ---
+
 
 ## Screenshots 
 
 coming soon...
 
----
-
-## Contributing
-
-Contributions are welcome. Feel free to open issues or submit pull requests. Please follow the repository’s coding standards and commit message conventions.
 
 ---
+
 
 ## Developer
 

@@ -52,7 +52,6 @@ Bright Home Energy Saver is a smart home project designed to help users monitor 
    ```bash
    npm run dev
    ```
-Open http://localhost:5173 in your browser to view the app.
 
  
 ---

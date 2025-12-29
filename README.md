@@ -18,14 +18,55 @@ Light/Dark mode – Choose a theme that suits your preference.
 
 ---
 
-## What technologies are used for this project?
+## Tech Stack
 
-This project is built with:
+Frontend: React, TypeScript, Vite
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+UI Library: Tailwind CSS, shadcn/ui
+
+Backend/Database: Supabase
+
+Charts: Chart.js 
+
+State Management: Redux
+
+Deployment: Vercel
 
 ---
+
+## Installation
+
+Clone the repository:
+
+git clone https://github.com/MisturaDev/bright-home-saver.git
+
+
+Install dependencies:
+
+cd bright-home-saver
+npm install
+
+
+Run the development server:
+
+npm run dev
+
+
+Open http://localhost:5173 in your browser to view the app.
+
+---
+
+## Screenshots 
+
+coming soon...
+
+
+---
+
+
+
+## Contributing
+
+Contributions are welcome. Feel free to open issues or submit pull requests. Please follow the repository’s coding standards and commit message conventions.
+
+

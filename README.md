@@ -20,17 +20,11 @@ Light/Dark mode – Choose a theme that suits your preference.
 
 ## Tech Stack
 
-Frontend: React, TypeScript, Vite
-
-UI Library: Tailwind CSS, shadcn/ui
-
-Backend/Database: Supabase
-
-Charts: Chart.js 
-
-State Management: Redux
-
-Deployment: Vercel
+- **Frontend:** React, TypeScript, Vite
+- **UI Library:** Tailwind CSS, shadcn/ui  
+- **Charts:** (To be added — e.g., Chart.js, Recharts)
+- **State Management:** (Using React state/hooks for now) 
+- **Deployment:** (To be deployed with Vercel)
 
 ---
 

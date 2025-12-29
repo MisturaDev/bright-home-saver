@@ -1,7 +1,8 @@
+import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useApp } from '@/contexts/AppContext';
-import { calculateDailyEnergy, calculateDailyCost, formatCurrency, formatEnergy, getDeviceIcon, hourlyUsageData, ELECTRICITY_RATE } from '@/lib/energy-data';
+import { calculateDailyEnergy, calculateDailyCost, formatCurrency, formatEnergy, getDeviceIcon, generateHourlyUsage, ELECTRICITY_RATE } from '@/lib/energy-data';
 import { AreaChart, Area, XAxis, YAxis, ResponsiveContainer, Tooltip } from 'recharts';
 import { Zap, TrendingUp, ChevronRight } from 'lucide-react';
 import BottomNav from '@/components/BottomNav';
@@ -9,6 +10,8 @@ import BottomNav from '@/components/BottomNav';
 const Dashboard = () => {
   const navigate = useNavigate();
   const { devices, user } = useApp();
+
+  const hourlyUsageData = useMemo(() => generateHourlyUsage(devices), [devices]);
 
   // Calculate totals
   const totalEnergy = devices.reduce((sum, d) => sum + calculateDailyEnergy(d), 0);

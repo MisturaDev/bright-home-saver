@@ -116,13 +116,51 @@ export const energyTips = [
   },
 ];
 
-export const hourlyUsageData = [
-  { hour: '12am', usage: 0.8 },
-  { hour: '3am', usage: 0.6 },
-  { hour: '6am', usage: 1.2 },
-  { hour: '9am', usage: 2.1 },
-  { hour: '12pm', usage: 2.8 },
-  { hour: '3pm', usage: 3.2 },
-  { hour: '6pm', usage: 3.5 },
-  { hour: '9pm', usage: 2.4 },
-];
+export const generateHourlyUsage = (devices: Device[]) => {
+  const hours = Array.from({ length: 24 }, (_, i) => i);
+
+  return hours.map(hour => {
+    let hourlyTotal = 0;
+
+    devices.filter(d => d.isOn).forEach(device => {
+      let isActive = false;
+
+      // Simulate usage patterns
+      if (device.type === 'fridge') {
+        isActive = true; // Always on
+      } else if (device.type === 'ac') {
+        // Night time: 8PM - 6AM
+        isActive = hour >= 20 || hour <= 6;
+      } else if (device.type === 'lights') {
+        // Evening: 6PM - 12AM
+        isActive = hour >= 18;
+      } else if (device.type === 'tv') {
+        // Prime time: 6PM - 11PM
+        isActive = hour >= 18 && hour <= 23;
+      } else if (device.type === 'fan') {
+        // Hot afternoons and night
+        isActive = (hour >= 12 && hour <= 16) || (hour >= 20 || hour <= 6);
+      } else {
+        // Spread standard daily usage roughly
+        isActive = hour >= 8 && hour <= 22;
+      }
+
+      if (isActive) {
+        // Power (W) / 1000 = kW. For 1 hour, that's kWh.
+        hourlyTotal += device.powerRating / 1000;
+      }
+    });
+
+    // Format hour label
+    const period = hour >= 12 ? 'pm' : 'am';
+    const displayHour = hour % 12 || 12;
+    const label = `${displayHour}${period}`;
+
+    return {
+      hour: label,
+      usage: parseFloat(hourlyTotal.toFixed(2)),
+      originalHour: hour // for sorting/filtering if needed
+    };
+    // Filter to just every 3 hours for cleaner chart labels if desired, or keep all
+  }).filter((_, i) => i % 3 === 0);
+};

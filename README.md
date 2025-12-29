@@ -5,15 +5,15 @@ Bright Home Energy Saver is a smart home project designed to help users monitor 
 
 ## Features
 
-Real-time energy tracking – View live energy consumption in your home.
+- **Real-time energy tracking**: View live energy consumption in your home.
 
-Dashboard with charts – Visualize your energy usage over time.
+- **Dashboard with charts**: Visualize your energy usage over time.
 
-Efficiency tips – Get recommendations to save energy and reduce bills.
+- **Efficiency tips?**: Get recommendations to save energy and reduce bills.
 
-Responsive design – Works seamlessly on desktop and mobile.
+- **Responsive design**: Works seamlessly on desktop and mobile.
 
-Light/Dark mode – Choose a theme that suits your preference.
+- **Light/Dark mode**: Choose a theme that suits your preference.
 
 
 ---
@@ -22,7 +22,7 @@ Light/Dark mode – Choose a theme that suits your preference.
 
 - **Frontend:** React, TypeScript, Vite
 - **UI Library:** Tailwind CSS, shadcn/ui  
-- **Charts:** (To be added — e.g., Chart.js, Recharts)
+- **Charts:** (To be added)
 - **State Management:** (Using React state/hooks for now) 
 - **Deployment:** (To be deployed with Vercel)
 

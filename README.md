@@ -1,6 +1,6 @@
 # Bright Home Energy Saver ⚡🏠
 
-Bright Home Energy Saver is a smart home project designed to help users monitor and optimize their energy consumption. It provides insights into energy usage, promotes efficient energy practices and helps reduce electricity costs—all in a sleek, easy-to-use interface.
+Bright Home Energy Saver is a smart home project designed to help users monitor and optimize their energy consumption. It provides insights into energy usage, promotes efficient energy practices and helps reduce electricity costs all in a sleek, easy-to-use interface.
 
 
 ## Features
@@ -51,7 +51,7 @@ Deployment: Vercel
    Create a `.env` file in the root directory and add your Supabase credentials:
    ```env
     VITE_SUPABASE_URL=your_supabase_url
-   VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+    VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
    ```
 
 4. **Run the development server**
@@ -62,18 +62,22 @@ Open http://localhost:5173 in your browser to view the app.
  
 ---
 
-
 ## Screenshots 
 
 coming soon...
 
-
 ---
-
-
 
 ## Contributing
 
 Contributions are welcome. Feel free to open issues or submit pull requests. Please follow the repository’s coding standards and commit message conventions.
+
+---
+
+## Developer
+
+**Mistura Ishola**
+
+[LinkedIn](https://www.linkedin.com/in/mistura-ishola/)
 
 

@@ -20,16 +20,17 @@ export interface User {
   id: string;
   name: string;
   email: string;
+  electricityRate?: number;
 }
 
-export const ELECTRICITY_RATE = 70; // ₦70 per kWh (example Nigerian rate)
+export const ELECTRICITY_RATE = 70; // Default fallback
 
 export const calculateDailyEnergy = (device: Device): number => {
   return (device.powerRating * device.dailyUsageHours) / 1000; // kWh
 };
 
-export const calculateDailyCost = (device: Device): number => {
-  return calculateDailyEnergy(device) * ELECTRICITY_RATE;
+export const calculateDailyCost = (device: Device, rate: number = ELECTRICITY_RATE): number => {
+  return calculateDailyEnergy(device) * rate;
 };
 
 export const formatCurrency = (amount: number): string => {

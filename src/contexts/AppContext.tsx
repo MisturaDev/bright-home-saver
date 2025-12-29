@@ -17,6 +17,7 @@ interface AppContextType {
   login: (email: string, password: string) => Promise<{ error: any }>;
   signup: (name: string, email: string, password: string) => Promise<{ error: any }>;
   logout: () => Promise<void>;
+  updateElectricityRate: (rate: number) => Promise<boolean>;
   isLoading: boolean;
 }
 
@@ -36,6 +37,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
           id: session.user.id,
           email: session.user.email || '',
           name: session.user.user_metadata.name || session.user.email?.split('@')[0] || 'User',
+          electricityRate: session.user.user_metadata.electricity_rate,
         });
         fetchDevices(session.user.id);
       } else {
@@ -53,6 +55,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
           id: session.user.id,
           email: session.user.email || '',
           name: session.user.user_metadata.name || session.user.email?.split('@')[0] || 'User',
+          electricityRate: session.user.user_metadata.electricity_rate,
         });
         fetchDevices(session.user.id);
       } else {
@@ -215,6 +218,27 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     setDevices([]);
   };
 
+  const updateElectricityRate = async (rate: number): Promise<boolean> => {
+    try {
+      const { data, error } = await supabase.auth.updateUser({
+        data: { electricity_rate: rate }
+      });
+
+      if (error) throw error;
+
+      if (data.user) {
+        setUser(prev => prev ? { ...prev, electricityRate: rate } : null);
+        toast.success('Electricity rate updated');
+        return true;
+      }
+      return false;
+    } catch (error: any) {
+      console.error('Error updating rate:', error);
+      toast.error('Failed to update electricity rate');
+      return false;
+    }
+  };
+
   return (
     <AppContext.Provider
       value={{
@@ -231,6 +255,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         login,
         signup,
         logout,
+        updateElectricityRate,
         isLoading,
       }}
     >

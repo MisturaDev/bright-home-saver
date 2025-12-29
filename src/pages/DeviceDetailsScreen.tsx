@@ -13,7 +13,7 @@ import BottomNav from '@/components/BottomNav';
 const DeviceDetailsScreen = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { devices, updateDevice, deleteDevice } = useApp();
+  const { devices, updateDevice, deleteDevice, user } = useApp();
 
   const device = devices.find(d => d.id === id);
   const [isEditing, setIsEditing] = useState(false);
@@ -30,7 +30,7 @@ const DeviceDetailsScreen = () => {
   }
 
   const dailyEnergy = calculateDailyEnergy(device);
-  const dailyCost = calculateDailyCost(device);
+  const dailyCost = calculateDailyCost(device, user?.electricityRate);
   const monthlyCost = dailyCost * 30;
 
   const handleSave = async () => {
@@ -192,7 +192,7 @@ const DeviceDetailsScreen = () => {
                 </div>
                 <div className="flex justify-between py-2 border-b border-border">
                   <span className="text-muted-foreground">Rate</span>
-                  <span className="font-medium text-foreground">₦{ELECTRICITY_RATE}/kWh</span>
+                  <span className="font-medium text-foreground">₦{user?.electricityRate || ELECTRICITY_RATE}/kWh</span>
                 </div>
                 <div className="flex justify-between py-2">
                   <span className="text-muted-foreground">Type</span>

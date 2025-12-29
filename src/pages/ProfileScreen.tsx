@@ -1,15 +1,39 @@
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
 import { useApp } from '@/contexts/AppContext';
-import { ArrowLeft, User, Mail, Bell, Smartphone, LogOut, ChevronRight, Shield } from 'lucide-react';
+import { ArrowLeft, User, Mail, Bell, Smartphone, LogOut, ChevronRight, Shield, Edit2, Check, X } from 'lucide-react';
 import { toast } from 'sonner';
 import BottomNav from '@/components/BottomNav';
 
 const ProfileScreen = () => {
   const navigate = useNavigate();
-  const { user, logout, devices } = useApp();
+  const { user, logout, devices, updateElectricityRate } = useApp();
+  const [rate, setRate] = useState(user?.electricityRate?.toString() || '70');
+  const [isEditingRate, setIsEditingRate] = useState(false);
+
+  // Update local state when user data loads
+  useEffect(() => {
+    if (user?.electricityRate) {
+      setRate(user.electricityRate.toString());
+    }
+  }, [user]);
+
+  const handleUpdateRate = async () => {
+    const newRate = parseFloat(rate);
+    if (isNaN(newRate) || newRate <= 0) {
+      toast.error('Please enter a valid rate');
+      return;
+    }
+
+    const success = await updateElectricityRate(newRate);
+    if (success) {
+      setIsEditingRate(false);
+    }
+  };
 
   const handleLogout = () => {
     logout();
@@ -66,6 +90,41 @@ const ProfileScreen = () => {
           </CardContent>
         </Card>
 
+        {/* Electricity Rate Setting */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">Electricity Rate</CardTitle>
+          </CardHeader>
+          <CardContent className="p-5 pt-0">
+            <div className="flex items-end gap-3">
+              <div className="flex-1">
+                <label className="text-sm text-muted-foreground mb-1.5 block">Tariff (₦/kWh)</label>
+                <Input
+                  type="number"
+                  value={rate}
+                  onChange={(e) => setRate(e.target.value)}
+                  disabled={!isEditingRate}
+                  className="bg-background"
+                />
+              </div>
+              {isEditingRate ? (
+                <div className="flex gap-2">
+                  <Button variant="outline" size="icon" onClick={() => setIsEditingRate(false)}>
+                    <X className="w-4 h-4" />
+                  </Button>
+                  <Button size="icon" onClick={handleUpdateRate}>
+                    <Check className="w-4 h-4" />
+                  </Button>
+                </div>
+              ) : (
+                <Button variant="outline" size="icon" onClick={() => setIsEditingRate(true)}>
+                  <Edit2 className="w-4 h-4" />
+                </Button>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+
         {/* Settings */}
         <Card>
           <CardHeader>
@@ -75,9 +134,8 @@ const ProfileScreen = () => {
             {settingsItems.map((item, index) => (
               <div
                 key={item.label}
-                className={`flex items-center justify-between px-5 py-4 ${
-                  index !== settingsItems.length - 1 ? 'border-b border-border' : ''
-                } ${item.type === 'link' ? 'cursor-pointer hover:bg-secondary/50 transition-colors' : ''}`}
+                className={`flex items-center justify-between px-5 py-4 ${index !== settingsItems.length - 1 ? 'border-b border-border' : ''
+                  } ${item.type === 'link' ? 'cursor-pointer hover:bg-secondary/50 transition-colors' : ''}`}
                 onClick={item.type === 'link' ? item.action : undefined}
               >
                 <div className="flex items-center gap-3">
@@ -95,8 +153,8 @@ const ProfileScreen = () => {
         </Card>
 
         {/* Logout Button */}
-        <Button 
-          variant="outline" 
+        <Button
+          variant="outline"
           className="w-full border-destructive text-destructive hover:bg-destructive hover:text-destructive-foreground"
           onClick={handleLogout}
         >

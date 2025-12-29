@@ -20,7 +20,7 @@ const deviceTypes: { type: Device['type']; label: string }[] = [
 
 const AddDeviceScreen = () => {
   const navigate = useNavigate();
-  const { devices, addDevice } = useApp();
+  const { devices, addDevice, user } = useApp();
   const [showForm, setShowForm] = useState(false);
   const [selectedType, setSelectedType] = useState<Device['type']>('other');
   const [name, setName] = useState('');
@@ -90,8 +90,8 @@ const AddDeviceScreen = () => {
                         type="button"
                         onClick={() => setSelectedType(type)}
                         className={`p-3 rounded-xl border-2 transition-all ${selectedType === type
-                            ? 'border-primary bg-primary/10'
-                            : 'border-border hover:border-primary/50'
+                          ? 'border-primary bg-primary/10'
+                          : 'border-border hover:border-primary/50'
                           }`}
                       >
                         <span className="text-2xl block mb-1">{getDeviceIcon(type)}</span>
@@ -166,7 +166,7 @@ const AddDeviceScreen = () => {
                       {device.powerRating}W • {device.dailyUsageHours}h/day
                     </p>
                     <p className="text-xs text-primary font-medium">
-                      {formatEnergy(calculateDailyEnergy(device))} • {formatCurrency(calculateDailyCost(device))}/day
+                      {formatEnergy(calculateDailyEnergy(device))} • {formatCurrency(calculateDailyCost(device, user?.electricityRate))}/day
                     </p>
                   </div>
                   <ChevronRight className="w-5 h-5 text-muted-foreground" />

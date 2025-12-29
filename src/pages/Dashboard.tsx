@@ -12,7 +12,7 @@ const Dashboard = () => {
 
   // Calculate totals
   const totalEnergy = devices.reduce((sum, d) => sum + calculateDailyEnergy(d), 0);
-  const totalCost = devices.reduce((sum, d) => sum + calculateDailyCost(d), 0);
+  const totalCost = devices.reduce((sum, d) => sum + calculateDailyCost(d, user?.electricityRate), 0);
 
   // Get top 3 consumers
   const topDevices = [...devices]
@@ -49,7 +49,7 @@ const Dashboard = () => {
             <CardContent className="p-4">
               <p className="text-xs text-muted-foreground mb-1">Estimated Cost</p>
               <p className="text-2xl font-bold text-foreground">{formatCurrency(totalCost)}</p>
-              <p className="text-xs text-muted-foreground mt-1">@ ₦{ELECTRICITY_RATE}/kWh</p>
+              <p className="text-xs text-muted-foreground mt-1">@ ₦{user?.electricityRate || ELECTRICITY_RATE}/kWh</p>
             </CardContent>
           </Card>
         </div>
@@ -71,14 +71,14 @@ const Dashboard = () => {
                       <stop offset="95%" stopColor="hsl(162, 63%, 41%)" stopOpacity={0} />
                     </linearGradient>
                   </defs>
-                  <XAxis 
-                    dataKey="hour" 
-                    axisLine={false} 
+                  <XAxis
+                    dataKey="hour"
+                    axisLine={false}
                     tickLine={false}
                     tick={{ fontSize: 10, fill: 'hsl(160, 15%, 45%)' }}
                   />
                   <YAxis hide />
-                  <Tooltip 
+                  <Tooltip
                     contentStyle={{
                       backgroundColor: 'hsl(0, 0%, 100%)',
                       border: 'none',
@@ -104,7 +104,7 @@ const Dashboard = () => {
         <div>
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-lg font-bold text-foreground">Top Energy Consumers</h2>
-            <button 
+            <button
               onClick={() => navigate('/add-device')}
               className="text-sm text-primary font-medium"
             >
@@ -113,7 +113,7 @@ const Dashboard = () => {
           </div>
           <div className="space-y-3">
             {topDevices.map((device, index) => (
-              <Card 
+              <Card
                 key={device.id}
                 className="cursor-pointer hover:scale-[1.02] transition-transform"
                 onClick={() => navigate(`/device/${device.id}`)}
@@ -130,7 +130,7 @@ const Dashboard = () => {
                       )}
                     </div>
                     <p className="text-sm text-muted-foreground">
-                      {formatEnergy(calculateDailyEnergy(device))} • {formatCurrency(calculateDailyCost(device))}
+                      {formatEnergy(calculateDailyEnergy(device))} • {formatCurrency(calculateDailyCost(device, user?.electricityRate))}
                     </p>
                   </div>
                   <div className="flex items-center gap-2">

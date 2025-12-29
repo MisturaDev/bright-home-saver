@@ -36,25 +36,32 @@ Deployment: Vercel
 
 ## Installation
 
-Clone the repository:
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/MisturaDev/bright-home-saver.git
+   cd bright-home-saver
+   ```
 
-git clone https://github.com/MisturaDev/bright-home-saver.git
+2. **Install dependencies**
+   ```bash
+   npm install
+   ```
 
+3. **Set up Environment Variables**
+   Create a `.env` file in the root directory and add your Supabase credentials:
+   ```env
+    VITE_SUPABASE_URL=your_supabase_url
+   VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+   ```
 
-Install dependencies:
-
-cd bright-home-saver
-npm install
-
-
-Run the development server:
-
-npm run dev
-
-
+4. **Run the development server**
+   ```bash
+   npm run dev
+   ```
 Open http://localhost:5173 in your browser to view the app.
-
+ 
 ---
+
 
 ## Screenshots 
 

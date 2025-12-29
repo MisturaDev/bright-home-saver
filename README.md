@@ -24,7 +24,7 @@ Bright Home Energy Saver is a smart home project designed to help users monitor 
 - **UI Library:** Tailwind CSS, shadcn/ui  
 - **Charts:** (To be added)
 - **State Management:** Using React state/hooks for now
-- **Deployment:** (To be deployed with Vercel)
+- **Deployment:** Vercel
 
 ---
 

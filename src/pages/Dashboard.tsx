@@ -83,7 +83,7 @@ const Dashboard = () => {
   const totalCost = devices.reduce((sum, d) => sum + calculateDailyCost(d, user?.electricityRate), 0);
 
   // Budget calculations
-  const budget = user?.budget || 0;
+  const budget = Number(user?.budget || 0);
   const budgetPercent = budget > 0 ? Math.min((monthTotal.cost / budget) * 100, 100) : 0;
   const isOverBudget = monthTotal.cost > budget;
   const budgetColor = budgetPercent < 75 ? 'bg-success' : budgetPercent < 90 ? 'bg-yellow-500' : 'bg-destructive';
@@ -169,7 +169,7 @@ const Dashboard = () => {
                 <Button
                   variant="outline"
                   size="sm"
-                  className="h-8 text-xs bg-transparent border-primary-foreground/20 text-primary-foreground hover:bg-primary-foreground/10 hover:text-primary-foreground"
+                  className="h-8 text-xs"
                   onClick={() => navigate('/profile')}
                 >
                   Set Budget

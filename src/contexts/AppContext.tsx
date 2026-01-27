@@ -17,7 +17,7 @@ interface AppContextType {
   login: (email: string, password: string) => Promise<{ error: any }>;
   signup: (name: string, email: string, password: string) => Promise<{ error: any }>;
   logout: () => Promise<void>;
-  logout: () => Promise<void>;
+
   updateElectricityRate: (rate: number) => Promise<boolean>;
   updateBudget: (budget: number) => Promise<boolean>;
   isLoading: boolean;
@@ -130,12 +130,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         };
         setDevices(prev => [...prev, newDevice]);
 
-        // Log to energy_usage as requested
-        await supabase.from('energy_usage').insert({
-          user_id: user.id,
-          device: newDevice.name,
-          usage: 0, // Initial usage
-        });
+
 
         return true;
       }
@@ -150,7 +145,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const updateDevice = async (id: string, updates: Partial<Device>): Promise<boolean> => {
     try {
       // Map frontend camelCase to DB snake_case
-      const dbUpdates: any = {};
+      const dbUpdates: Record<string, any> = {};
       if (updates.name !== undefined) dbUpdates.name = updates.name;
       if (updates.type !== undefined) dbUpdates.type = updates.type;
       if (updates.powerRating !== undefined) dbUpdates.power_rating = updates.powerRating;

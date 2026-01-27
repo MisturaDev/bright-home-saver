@@ -17,7 +17,9 @@ interface AppContextType {
   login: (email: string, password: string) => Promise<{ error: any }>;
   signup: (name: string, email: string, password: string) => Promise<{ error: any }>;
   logout: () => Promise<void>;
+  logout: () => Promise<void>;
   updateElectricityRate: (rate: number) => Promise<boolean>;
+  updateBudget: (budget: number) => Promise<boolean>;
   isLoading: boolean;
 }
 
@@ -38,6 +40,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
           email: session.user.email || '',
           name: session.user.user_metadata.name || session.user.email?.split('@')[0] || 'User',
           electricityRate: session.user.user_metadata.electricity_rate,
+          budget: session.user.user_metadata.budget,
         });
         fetchDevices(session.user.id);
       } else {
@@ -56,6 +59,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
           email: session.user.email || '',
           name: session.user.user_metadata.name || session.user.email?.split('@')[0] || 'User',
           electricityRate: session.user.user_metadata.electricity_rate,
+          budget: session.user.user_metadata.budget,
         });
         fetchDevices(session.user.id);
       } else {
@@ -239,6 +243,27 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     }
   };
 
+  const updateBudget = async (budget: number): Promise<boolean> => {
+    try {
+      const { data, error } = await supabase.auth.updateUser({
+        data: { budget: budget }
+      });
+
+      if (error) throw error;
+
+      if (data.user) {
+        setUser(prev => prev ? { ...prev, budget: budget } : null);
+        toast.success('Monthly budget updated');
+        return true;
+      }
+      return false;
+    } catch (error: any) {
+      console.error('Error updating budget:', error);
+      toast.error('Failed to update budget');
+      return false;
+    }
+  };
+
   return (
     <AppContext.Provider
       value={{
@@ -256,6 +281,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         signup,
         logout,
         updateElectricityRate,
+        updateBudget,
         isLoading,
       }}
     >

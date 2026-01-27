@@ -21,6 +21,7 @@ export interface User {
   name: string;
   email: string;
   electricityRate?: number;
+  budget?: number;
 }
 
 export const ELECTRICITY_RATE = 70; // Default fallback

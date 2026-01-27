@@ -8,20 +8,31 @@ import { AreaChart, Area, XAxis, YAxis, ResponsiveContainer, Tooltip, CartesianG
 import { Zap, TrendingUp, ChevronRight, BarChart3, Calendar, Database } from 'lucide-react';
 import BottomNav from '@/components/BottomNav';
 import { Button } from '@/components/ui/button';
+import { Progress } from '@/components/ui/progress';
 import { toast } from 'sonner';
 
 const Dashboard = () => {
   const navigate = useNavigate();
   const { devices, user } = useApp();
 
-
   const [timeRange, setTimeRange] = useState<'today' | 'week' | 'month'>('today');
   const [historyData, setHistoryData] = useState<DailyUsage[]>([]);
   const [isLoadingHistory, setIsLoadingHistory] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [monthTotal, setMonthTotal] = useState({ energy: 0, cost: 0 });
 
   // Today's simulated data
-  const hourlyUsageData = generateHourlyUsage(devices); // useMemo removed to refresh on updates easily
+  const hourlyUsageData = generateHourlyUsage(devices);
+
+  useEffect(() => {
+    if (user) fetchMonthTotal();
+  }, [user]);
+
+  const fetchMonthTotal = async () => {
+    if (!user) return;
+    const total = await EnergyService.getCurrentMonthTotal(user.id);
+    setMonthTotal(total);
+  };
 
   useEffect(() => {
     if (timeRange !== 'today' && user) {
@@ -51,6 +62,7 @@ const Dashboard = () => {
       if (success) {
         toast.success("History generated! Switch to Week/Month view.");
         if (timeRange !== 'today') fetchHistory();
+        fetchMonthTotal(); // Refresh budget view too
       } else {
         toast.info("Data already exists or no devices found.");
       }
@@ -69,6 +81,12 @@ const Dashboard = () => {
   // Calculate totals
   const totalEnergy = devices.reduce((sum, d) => sum + calculateDailyEnergy(d), 0);
   const totalCost = devices.reduce((sum, d) => sum + calculateDailyCost(d, user?.electricityRate), 0);
+
+  // Budget calculations
+  const budget = user?.budget || 0;
+  const budgetPercent = budget > 0 ? Math.min((monthTotal.cost / budget) * 100, 100) : 0;
+  const isOverBudget = monthTotal.cost > budget;
+  const budgetColor = budgetPercent < 75 ? 'bg-success' : budgetPercent < 90 ? 'bg-yellow-500' : 'bg-destructive';
 
   // Get top 3 consumers
   const topDevices = [...devices]
@@ -91,7 +109,7 @@ const Dashboard = () => {
               className="w-10 h-10 bg-primary-foreground/10 hover:bg-primary-foreground/20 text-primary-foreground rounded-full"
               onClick={handleGenerateData}
               disabled={isGenerating}
-              title="Generate Demo History"
+              title="Generate Usage History"
             >
               <Database className={`w-5 h-5 ${isGenerating ? 'animate-pulse' : ''}`} />
             </Button>
@@ -121,6 +139,45 @@ const Dashboard = () => {
             </CardContent>
           </Card>
         </div>
+
+        {/* Budget Widget */}
+        <Card className="border-0 bg-card/95 backdrop-blur-sm mt-4">
+          <CardContent className="p-4">
+            <div className="flex justify-between items-center mb-2">
+              <p className="text-xs text-muted-foreground">Monthly Budget</p>
+              {budget > 0 && (
+                <p className="text-xs font-medium text-foreground">
+                  {Math.round(budgetPercent)}% used
+                </p>
+              )}
+            </div>
+
+            {budget > 0 ? (
+              <div className="space-y-2">
+                <div className="flex justify-between items-end">
+                  <p className="text-lg font-bold text-foreground">{formatCurrency(monthTotal.cost)}</p>
+                  <p className="text-sm text-muted-foreground">of {formatCurrency(budget)}</p>
+                </div>
+                <Progress value={budgetPercent} className="h-2" indicatorClassName={budgetColor} />
+                {isOverBudget && (
+                  <p className="text-xs text-destructive mt-1 font-medium">You have exceeded your budget!</p>
+                )}
+              </div>
+            ) : (
+              <div className="flex items-center justify-between">
+                <p className="text-sm font-medium text-foreground">Set a budget to track spending</p>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-8 text-xs bg-transparent border-primary-foreground/20 text-primary-foreground hover:bg-primary-foreground/10 hover:text-primary-foreground"
+                  onClick={() => navigate('/profile')}
+                >
+                  Set Budget
+                </Button>
+              </div>
+            )}
+          </CardContent>
+        </Card>
       </div>
 
       <div className="px-6 -mt-4 space-y-6">

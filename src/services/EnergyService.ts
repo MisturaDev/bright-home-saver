@@ -63,6 +63,35 @@ export const EnergyService = {
     },
 
     /**
+     * Get total cost and energy for the current month
+     */
+    async getCurrentMonthTotal(userId: string): Promise<{ energy: number; cost: number }> {
+        const start = startOfDay(new Date());
+        start.setDate(1); // 1st of current month
+
+        const { data, error } = await supabase
+            .from('usage_logs')
+            .select('energy_kwh, cost')
+            .eq('user_id', userId)
+            .gte('timestamp', start.toISOString());
+
+        if (error) {
+            console.error('Error fetching month total:', error);
+            return { energy: 0, cost: 0 };
+        }
+
+        const total = data.reduce(
+            (acc, curr) => ({
+                energy: acc.energy + Number(curr.energy_kwh),
+                cost: acc.cost + Number(curr.cost),
+            }),
+            { energy: 0, cost: 0 }
+        );
+
+        return total;
+    },
+
+    /**
      * Log usage for a specific device (or general)
      */
     async logUsage(userId: string, deviceId: string | null, energy: number, cost: number, timestamp: Date = new Date()) {

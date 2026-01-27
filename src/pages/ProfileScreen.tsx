@@ -11,14 +11,19 @@ import BottomNav from '@/components/BottomNav';
 
 const ProfileScreen = () => {
   const navigate = useNavigate();
-  const { user, logout, devices, updateElectricityRate } = useApp();
+  const { user, logout, devices, updateElectricityRate, updateBudget } = useApp();
   const [rate, setRate] = useState(user?.electricityRate?.toString() || '70');
+  const [budget, setBudget] = useState(user?.budget?.toString() || '0');
   const [isEditingRate, setIsEditingRate] = useState(false);
+  const [isEditingBudget, setIsEditingBudget] = useState(false);
 
   // Update local state when user data loads
   useEffect(() => {
     if (user?.electricityRate) {
       setRate(user.electricityRate.toString());
+    }
+    if (user?.budget) {
+      setBudget(user.budget.toString());
     }
   }, [user]);
 
@@ -32,6 +37,19 @@ const ProfileScreen = () => {
     const success = await updateElectricityRate(newRate);
     if (success) {
       setIsEditingRate(false);
+    }
+  };
+
+  const handleUpdateBudget = async () => {
+    const newBudget = parseFloat(budget);
+    if (isNaN(newBudget) || newBudget < 0) {
+      toast.error('Please enter a valid budget');
+      return;
+    }
+
+    const success = await updateBudget(newBudget);
+    if (success) {
+      setIsEditingBudget(false);
     }
   };
 
@@ -118,6 +136,41 @@ const ProfileScreen = () => {
                 </div>
               ) : (
                 <Button variant="outline" size="icon" onClick={() => setIsEditingRate(true)}>
+                  <Edit2 className="w-4 h-4" />
+                </Button>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Budget Setting */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">Monthly Budget</CardTitle>
+          </CardHeader>
+          <CardContent className="p-5 pt-0">
+            <div className="flex items-end gap-3">
+              <div className="flex-1">
+                <label className="text-sm text-muted-foreground mb-1.5 block">Target (₦)</label>
+                <Input
+                  type="number"
+                  value={budget}
+                  onChange={(e) => setBudget(e.target.value)}
+                  disabled={!isEditingBudget}
+                  className="bg-background"
+                />
+              </div>
+              {isEditingBudget ? (
+                <div className="flex gap-2">
+                  <Button variant="outline" size="icon" onClick={() => setIsEditingBudget(false)}>
+                    <X className="w-4 h-4" />
+                  </Button>
+                  <Button size="icon" onClick={handleUpdateBudget}>
+                    <Check className="w-4 h-4" />
+                  </Button>
+                </div>
+              ) : (
+                <Button variant="outline" size="icon" onClick={() => setIsEditingBudget(true)}>
                   <Edit2 className="w-4 h-4" />
                 </Button>
               )}

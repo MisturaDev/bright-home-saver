@@ -141,7 +141,10 @@ const Dashboard = () => {
         </div>
 
         {/* Budget Widget */}
-        <Card className="border-0 bg-card/95 backdrop-blur-sm mt-4">
+        <Card
+          className="border-0 bg-card/95 backdrop-blur-sm mt-4 cursor-pointer hover:bg-card/90 transition-colors"
+          onClick={() => navigate('/profile', { state: { focus: 'budget' } })}
+        >
           <CardContent className="p-4">
             <div className="flex justify-between items-center mb-2">
               <p className="text-xs text-muted-foreground">Monthly Budget</p>
@@ -170,7 +173,10 @@ const Dashboard = () => {
                   variant="outline"
                   size="sm"
                   className="h-8 text-xs"
-                  onClick={() => navigate('/profile')}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    navigate('/profile', { state: { focus: 'budget' } });
+                  }}
                 >
                   Set Budget
                 </Button>

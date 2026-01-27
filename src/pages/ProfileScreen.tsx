@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useRef, useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -11,11 +11,23 @@ import BottomNav from '@/components/BottomNav';
 
 const ProfileScreen = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { user, logout, devices, updateElectricityRate, updateBudget } = useApp();
   const [rate, setRate] = useState(user?.electricityRate?.toString() || '70');
   const [budget, setBudget] = useState(user?.budget?.toString() || '0');
   const [isEditingRate, setIsEditingRate] = useState(false);
   const [isEditingBudget, setIsEditingBudget] = useState(false);
+
+  const budgetRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (location.state?.focus === 'budget') {
+      setIsEditingBudget(true);
+      setTimeout(() => {
+        budgetRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 100);
+    }
+  }, [location.state]);
 
   // Update local state when user data loads
   useEffect(() => {
@@ -144,7 +156,7 @@ const ProfileScreen = () => {
         </Card>
 
         {/* Budget Setting */}
-        <Card>
+        <Card ref={budgetRef}>
           <CardHeader>
             <CardTitle className="text-base">Monthly Budget</CardTitle>
           </CardHeader>

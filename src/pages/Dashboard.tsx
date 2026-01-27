@@ -1,17 +1,70 @@
-import { useMemo } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useApp } from '@/contexts/AppContext';
 import { calculateDailyEnergy, calculateDailyCost, formatCurrency, formatEnergy, getDeviceIcon, generateHourlyUsage, ELECTRICITY_RATE } from '@/lib/energy-data';
-import { AreaChart, Area, XAxis, YAxis, ResponsiveContainer, Tooltip } from 'recharts';
-import { Zap, TrendingUp, ChevronRight } from 'lucide-react';
+import { EnergyService, DailyUsage } from '@/services/EnergyService';
+import { AreaChart, Area, XAxis, YAxis, ResponsiveContainer, Tooltip, CartesianGrid } from 'recharts';
+import { Zap, TrendingUp, ChevronRight, BarChart3, Calendar, Database } from 'lucide-react';
 import BottomNav from '@/components/BottomNav';
+import { Button } from '@/components/ui/button';
+import { toast } from 'sonner';
 
 const Dashboard = () => {
   const navigate = useNavigate();
   const { devices, user } = useApp();
 
-  const hourlyUsageData = useMemo(() => generateHourlyUsage(devices), [devices]);
+
+  const [timeRange, setTimeRange] = useState<'today' | 'week' | 'month'>('today');
+  const [historyData, setHistoryData] = useState<DailyUsage[]>([]);
+  const [isLoadingHistory, setIsLoadingHistory] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
+
+  // Today's simulated data
+  const hourlyUsageData = generateHourlyUsage(devices); // useMemo removed to refresh on updates easily
+
+  useEffect(() => {
+    if (timeRange !== 'today' && user) {
+      fetchHistory();
+    }
+  }, [timeRange, user]);
+
+  const fetchHistory = async () => {
+    if (!user) return;
+    setIsLoadingHistory(true);
+    try {
+      const days = timeRange === 'week' ? 7 : 30;
+      const data = await EnergyService.getDailyUsage(user.id, user.id, days);
+      setHistoryData(data);
+    } catch (error) {
+      toast.error("Failed to load history");
+    } finally {
+      setIsLoadingHistory(false);
+    }
+  };
+
+  const handleGenerateData = async () => {
+    if (!user) return;
+    setIsGenerating(true);
+    try {
+      const success = await EnergyService.generateHistoricalData(user.id, devices);
+      if (success) {
+        toast.success("History generated! Switch to Week/Month view.");
+        if (timeRange !== 'today') fetchHistory();
+      } else {
+        toast.info("Data already exists or no devices found.");
+      }
+    } catch (error) {
+      toast.error("Failed to generate data");
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
+  // Determine which data to show
+  const chartData = timeRange === 'today' ? hourlyUsageData : historyData;
+  const xKey = timeRange === 'today' ? 'hour' : 'date';
+  const yKey = timeRange === 'today' ? 'usage' : 'energy';
 
   // Calculate totals
   const totalEnergy = devices.reduce((sum, d) => sum + calculateDailyEnergy(d), 0);
@@ -31,8 +84,20 @@ const Dashboard = () => {
             <p className="text-primary-foreground/80 text-sm">Good morning</p>
             <h1 className="text-xl font-bold text-primary-foreground">{user?.name || 'User'}</h1>
           </div>
-          <div className="w-10 h-10 bg-primary-foreground/20 rounded-full flex items-center justify-center">
-            <Zap className="w-5 h-5 text-primary-foreground" />
+          <div className="flex gap-2">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="w-10 h-10 bg-primary-foreground/10 hover:bg-primary-foreground/20 text-primary-foreground rounded-full"
+              onClick={handleGenerateData}
+              disabled={isGenerating}
+              title="Generate Demo History"
+            >
+              <Database className={`w-5 h-5 ${isGenerating ? 'animate-pulse' : ''}`} />
+            </Button>
+            <div className="w-10 h-10 bg-primary-foreground/20 rounded-full flex items-center justify-center">
+              <Zap className="w-5 h-5 text-primary-foreground" />
+            </div>
           </div>
         </div>
 
@@ -61,13 +126,33 @@ const Dashboard = () => {
       <div className="px-6 -mt-4 space-y-6">
         {/* Usage Chart */}
         <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-base">Today's Usage Pattern</CardTitle>
+          <CardHeader className="pb-2 flex flex-row items-center justify-between space-y-0">
+            <CardTitle className="text-base">Energy Overview</CardTitle>
+            <div className="flex bg-secondary rounded-lg p-1 gap-1">
+              <button
+                onClick={() => setTimeRange('today')}
+                className={`px-3 py-1 text-xs rounded-md transition-all ${timeRange === 'today' ? 'bg-background shadow-sm font-medium text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
+              >
+                Today
+              </button>
+              <button
+                onClick={() => setTimeRange('week')}
+                className={`px-3 py-1 text-xs rounded-md transition-all ${timeRange === 'week' ? 'bg-background shadow-sm font-medium text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
+              >
+                Week
+              </button>
+              <button
+                onClick={() => setTimeRange('month')}
+                className={`px-3 py-1 text-xs rounded-md transition-all ${timeRange === 'month' ? 'bg-background shadow-sm font-medium text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
+              >
+                Month
+              </button>
+            </div>
           </CardHeader>
           <CardContent>
             <div className="h-40">
               <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={hourlyUsageData}>
+                <AreaChart data={chartData}>
                   <defs>
                     <linearGradient id="colorUsage" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="5%" stopColor="hsl(162, 63%, 41%)" stopOpacity={0.3} />
@@ -75,10 +160,11 @@ const Dashboard = () => {
                     </linearGradient>
                   </defs>
                   <XAxis
-                    dataKey="hour"
+                    dataKey={xKey}
                     axisLine={false}
                     tickLine={false}
                     tick={{ fontSize: 10, fill: 'hsl(160, 15%, 45%)' }}
+                    tickFormatter={(val) => timeRange === 'today' ? val : val.slice(5)}
                   />
                   <YAxis hide />
                   <Tooltip
@@ -88,11 +174,12 @@ const Dashboard = () => {
                       borderRadius: '12px',
                       boxShadow: '0 8px 24px -8px rgba(0,0,0,0.15)',
                     }}
-                    formatter={(value: number) => [`${value.toFixed(2)} kWh`, 'Usage']}
+                    formatter={(value: number) => [`${value.toFixed(2)} kWh`, timeRange === 'today' ? 'Usage' : 'Energy']}
+                    labelFormatter={(label) => timeRange === 'today' ? label : new Date(label).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })}
                   />
                   <Area
                     type="monotone"
-                    dataKey="usage"
+                    dataKey={yKey}
                     stroke="hsl(162, 63%, 41%)"
                     strokeWidth={2}
                     fill="url(#colorUsage)"

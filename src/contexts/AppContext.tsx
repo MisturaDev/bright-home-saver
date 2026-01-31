@@ -1,7 +1,10 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { Device, Notification, User, defaultNotifications } from '@/lib/energy-data';
+import { Device, Notification, User } from '@/lib/energy-data';
 import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
+import { NotificationService } from '@/services/NotificationService';
+import { EnergyService } from '@/services/EnergyService';
+
 
 interface AppContextType {
   user: User | null;
@@ -28,8 +31,9 @@ const AppContext = createContext<AppContextType | undefined>(undefined);
 export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [devices, setDevices] = useState<Device[]>([]);
-  const [notifications, setNotifications] = useState<Notification[]>(defaultNotifications);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+
 
   // Initialize Auth
   useEffect(() => {
@@ -71,6 +75,50 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
     return () => subscription.unsubscribe();
   }, []);
+
+  // Fetch notifications and run checks when user or key data changes
+  useEffect(() => {
+    if (user) {
+      refreshNotifications();
+      // Run checks
+      runNotificationChecks();
+    } else {
+      setNotifications([]);
+    }
+  }, [user?.id, user?.budget, user?.electricityRate]); // Re-run if user identity or settings change
+
+  const runNotificationChecks = async () => {
+    if (!user) return;
+    try {
+      // 1. Check Budget
+      const monthTotal = await EnergyService.getCurrentMonthTotal(user.id);
+      if (user.budget) {
+        await NotificationService.checkBudget(user.id, monthTotal.cost, user.budget);
+      }
+
+      // 2. Check High Usage
+      // Check today's usage against a threshold
+      const todayUsage = await EnergyService.getDailyUsage(user.id, user.id, 1);
+      if (todayUsage.length > 0) {
+        // Check if today's usage > 20kWh (default)
+        await NotificationService.checkUsageHigh(user.id, todayUsage[todayUsage.length - 1].energy);
+      }
+
+
+      // Refresh after checks in case new ones were created
+      refreshNotifications();
+
+    } catch (e) {
+      console.error("Error running notification checks", e);
+    }
+  };
+
+  const refreshNotifications = async () => {
+    if (!user) return;
+    const data = await NotificationService.getNotifications(user.id);
+    setNotifications(data);
+  };
+
 
   const fetchDevices = async (userId: string) => {
     const { data, error } = await supabase
@@ -186,8 +234,10 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     }
   };
 
-  const markNotificationRead = (id: string) => {
+  const markNotificationRead = async (id: string) => {
+    // Optimistic update
     setNotifications(prev => prev.map(n => (n.id === id ? { ...n, read: true } : n)));
+    await NotificationService.markAsRead(id);
   };
 
   const login = async (email: string, password: string) => {

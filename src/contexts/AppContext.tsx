@@ -23,6 +23,7 @@ interface AppContextType {
 
   updateElectricityRate: (rate: number) => Promise<boolean>;
   updateBudget: (budget: number) => Promise<boolean>;
+  updateNotificationSettings: (settings: Partial<User>) => Promise<boolean>;
   isLoading: boolean;
 }
 
@@ -45,6 +46,9 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
           name: session.user.user_metadata.name || session.user.email?.split('@')[0] || 'User',
           electricityRate: session.user.user_metadata.electricity_rate,
           budget: session.user.user_metadata.budget,
+          notificationsEnabled: session.user.user_metadata.notifications_enabled ?? true,
+          energyAlertsEnabled: session.user.user_metadata.energy_alerts_enabled ?? true,
+          highUsageThreshold: session.user.user_metadata.high_usage_threshold,
         });
         fetchDevices(session.user.id);
       } else {
@@ -64,6 +68,9 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
           name: session.user.user_metadata.name || session.user.email?.split('@')[0] || 'User',
           electricityRate: session.user.user_metadata.electricity_rate,
           budget: session.user.user_metadata.budget,
+          notificationsEnabled: session.user.user_metadata.notifications_enabled ?? true,
+          energyAlertsEnabled: session.user.user_metadata.energy_alerts_enabled ?? true,
+          highUsageThreshold: session.user.user_metadata.high_usage_threshold,
         });
         fetchDevices(session.user.id);
       } else {
@@ -85,7 +92,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     } else {
       setNotifications([]);
     }
-  }, [user?.id, user?.budget, user?.electricityRate]); // Re-run if user identity or settings change
+  }, [user?.id, user?.budget, user?.electricityRate, user?.notificationsEnabled, user?.energyAlertsEnabled, user?.highUsageThreshold]); // Re-run if user settings change
 
   const runNotificationChecks = async () => {
     if (!user) return;
@@ -96,12 +103,15 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         await NotificationService.checkBudget(user.id, monthTotal.cost, user.budget);
       }
 
-      // 2. Check High Usage
+      // 2. Check High Usage (if enabled)
+      if (user.energyAlertsEnabled === false && user.notificationsEnabled === false) return;
+
       // Check today's usage against a threshold
       const todayUsage = await EnergyService.getDailyUsage(user.id, user.id, 1);
       if (todayUsage.length > 0) {
-        // Check if today's usage > 20kWh (default)
-        await NotificationService.checkUsageHigh(user.id, todayUsage[todayUsage.length - 1].energy);
+        // Use user defined threshold or default to 20
+        const threshold = user.highUsageThreshold || 20;
+        await NotificationService.checkUsageHigh(user.id, todayUsage[todayUsage.length - 1].energy, threshold);
       }
 
 
@@ -309,6 +319,32 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     }
   };
 
+  const updateNotificationSettings = async (settings: Partial<User>): Promise<boolean> => {
+    try {
+      const updates: any = {};
+      if (settings.notificationsEnabled !== undefined) updates.notifications_enabled = settings.notificationsEnabled;
+      if (settings.energyAlertsEnabled !== undefined) updates.energy_alerts_enabled = settings.energyAlertsEnabled;
+      if (settings.highUsageThreshold !== undefined) updates.high_usage_threshold = settings.highUsageThreshold;
+
+      const { data, error } = await supabase.auth.updateUser({
+        data: updates
+      });
+
+      if (error) throw error;
+
+      if (data.user) {
+        setUser(prev => prev ? { ...prev, ...settings } : null);
+        toast.success('Settings updated');
+        return true;
+      }
+      return false;
+    } catch (error: any) {
+      console.error('Error updating settings:', error);
+      toast.error('Failed to update settings');
+      return false;
+    }
+  };
+
   return (
     <AppContext.Provider
       value={{
@@ -327,6 +363,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         logout,
         updateElectricityRate,
         updateBudget,
+        updateNotificationSettings,
         isLoading,
       }}
     >

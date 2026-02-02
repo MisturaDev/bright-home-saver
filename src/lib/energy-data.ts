@@ -22,6 +22,9 @@ export interface User {
   email: string;
   electricityRate?: number;
   budget?: number;
+  notificationsEnabled?: boolean;
+  energyAlertsEnabled?: boolean;
+  highUsageThreshold?: number;
 }
 
 export const ELECTRICITY_RATE = 70; // Default fallback

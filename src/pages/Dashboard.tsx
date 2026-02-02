@@ -21,12 +21,33 @@ const Dashboard = () => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [monthTotal, setMonthTotal] = useState({ energy: 0, cost: 0 });
 
-  // Today's simulated data
-  const hourlyUsageData = generateHourlyUsage(devices);
+  const [todayUsage, setTodayUsage] = useState<{ hour: string; usage: number; originalHour: number }[]>([]);
 
+  // Initial load
   useEffect(() => {
-    if (user) fetchMonthTotal();
+    if (user) {
+      fetchMonthTotal();
+      fetchTodayData();
+    }
   }, [user]);
+
+  const fetchTodayData = async () => {
+    if (!user) return;
+    try {
+      const data = await EnergyService.getHourlyUsage(user.id);
+      if (data.length > 0 && data.some(d => d.usage > 0)) {
+        setTodayUsage(data);
+      } else {
+        // Fallback to simulation if no data
+        setTodayUsage(generateHourlyUsage(devices));
+      }
+    } catch (e) {
+      console.error("Failed to fetch today's usage", e);
+      setTodayUsage(generateHourlyUsage(devices));
+    }
+  };
+
+
 
   const fetchMonthTotal = async () => {
     if (!user) return;
@@ -62,7 +83,9 @@ const Dashboard = () => {
       if (success) {
         toast.success("History generated! Switch to Week/Month view.");
         if (timeRange !== 'today') fetchHistory();
+        if (timeRange !== 'today') fetchHistory();
         fetchMonthTotal(); // Refresh budget view too
+        fetchTodayData(); // Refresh today's view if we generated data for today
       } else {
         toast.info("Data already exists or no devices found.");
       }
@@ -74,7 +97,7 @@ const Dashboard = () => {
   };
 
   // Determine which data to show
-  const chartData = timeRange === 'today' ? hourlyUsageData : historyData;
+  const chartData = timeRange === 'today' ? todayUsage : historyData;
   const xKey = timeRange === 'today' ? 'hour' : 'date';
   const yKey = timeRange === 'today' ? 'usage' : 'energy';
 

@@ -63,6 +63,51 @@ export const EnergyService = {
     },
 
     /**
+     * Get hourly usage for a specific date
+     */
+    async getHourlyUsage(userId: string, date: Date = new Date()): Promise<{ hour: string; usage: number; originalHour: number }[]> {
+        const start = startOfDay(date);
+        const end = new Date(start);
+        end.setHours(23, 59, 59, 999);
+
+        const { data, error } = await supabase
+            .from('usage_logs')
+            .select('timestamp, energy_kwh')
+            .eq('user_id', userId)
+            .gte('timestamp', start.toISOString())
+            .lte('timestamp', end.toISOString());
+
+        if (error) {
+            console.error('Error fetching hourly usage:', error);
+            return [];
+        }
+
+        // Initialize 24 hours
+        const hourlyMap = new Map<number, number>();
+        for (let i = 0; i < 24; i++) {
+            hourlyMap.set(i, 0);
+        }
+
+        data?.forEach(log => {
+            const hour = new Date(log.timestamp).getHours();
+            const current = hourlyMap.get(hour) || 0;
+            hourlyMap.set(hour, current + Number(log.energy_kwh));
+        });
+
+        return Array.from(hourlyMap.entries()).map(([hour, usage]) => {
+            const period = hour >= 12 ? 'pm' : 'am';
+            const displayHour = hour % 12 || 12;
+            const label = `${displayHour}${period}`;
+
+            return {
+                hour: label,
+                usage: parseFloat(usage.toFixed(2)),
+                originalHour: hour
+            };
+        });
+    },
+
+    /**
      * Get total cost and energy for the current month
      */
     async getCurrentMonthTotal(userId: string): Promise<{ energy: number; cost: number }> {

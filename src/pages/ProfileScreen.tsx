@@ -207,6 +207,7 @@ const ProfileScreen = () => {
         </Card>
 
         {/* High Usage Threshold */}
+        {/* High Usage Threshold - Temporarily Disabled
         <Card>
           <CardHeader>
             <CardTitle className="text-base">High Usage Alert Threshold</CardTitle>
@@ -243,6 +244,7 @@ const ProfileScreen = () => {
             </p>
           </CardContent>
         </Card>
+        */}
 
         {/* Settings */}
         <Card>
@@ -261,6 +263,7 @@ const ProfileScreen = () => {
               />
             </div>
 
+            {/* Temporarily Disabled
             <div className="flex items-center justify-between px-5 py-4 border-b border-border">
               <div className="flex items-center gap-3">
                 <Shield className="w-5 h-5 text-muted-foreground" />
@@ -271,6 +274,7 @@ const ProfileScreen = () => {
                 onCheckedChange={() => toggleSetting('energyAlertsEnabled', user?.energyAlertsEnabled ?? true)}
               />
             </div>
+            */}
 
             <div
               className="flex items-center justify-between px-5 py-4 cursor-pointer hover:bg-secondary/50 transition-colors"

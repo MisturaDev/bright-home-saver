@@ -155,22 +155,43 @@ export const EnergyService = {
      * Backfill historical data for the last 30 days based on current devices
      * This is a "One-Time" or "Demo" action.
      */
-    async generateHistoricalData(userId: string, devices: Device[]) {
+    async generateHistoricalData(userId: string, devices: Device[], electricityRate?: number) {
         console.log("Generating historical data...");
 
-        // Check if data already exists to avoid double-seeding
-        const { count } = await supabase
+        // DELETE RECENT data (last 30 days) to allow regeneration/overwriting
+        const thirtyDaysAgo = subDays(new Date(), 30);
+        const { error: deleteError } = await supabase
             .from('usage_logs')
-            .select('*', { count: 'exact', head: true })
-            .eq('user_id', userId);
+            .delete()
+            .eq('user_id', userId)
+            .gte('timestamp', thirtyDaysAgo.toISOString());
 
-        if (count && count > 0) {
-            console.log("Data already exists, skipping generation.");
-            return false;
+        if (deleteError) {
+            console.error("Error clearing old data:", deleteError);
+            // We can choose to throw or proceed, but proceeding might double-count. 
+            // Throwing is safer.
+            throw deleteError;
         }
+
+        console.log("Cleared recent data. Generating new...");
 
         const logs = [];
         const now = new Date();
+
+        // Use provided devices or fallback to virtual devices for testing
+        let targetDevices = devices;
+        if (!targetDevices || targetDevices.length === 0) {
+            console.log("No devices found, using Virtual Home devices for simulation.");
+            targetDevices = [
+                { id: 'virtual-fridge', name: 'Virtual Fridge', type: 'fridge', powerRating: 150, dailyUsageHours: 24, isOn: true },
+                { id: 'virtual-ac', name: 'Virtual AC', type: 'ac', powerRating: 1500, dailyUsageHours: 6, isOn: true },
+                { id: 'virtual-tv', name: 'Virtual TV', type: 'tv', powerRating: 200, dailyUsageHours: 4, isOn: false },
+                { id: 'virtual-lights', name: 'Virtual Lights', type: 'light', powerRating: 60, dailyUsageHours: 8, isOn: true }
+            ] as Device[]; // Cast to Device[] to satisfy type if needed, though structure matches
+        }
+
+        // Use provided rate or fallback to default
+        const rateToUse = electricityRate || ELECTRICITY_RATE;
 
         for (let i = 0; i < 30; i++) {
             const date = subDays(now, i);
@@ -178,14 +199,21 @@ export const EnergyService = {
             // Add some randomness to make the chart look real
             const randomFactor = 0.8 + Math.random() * 0.4; // 0.8 to 1.2
 
-            for (const device of devices) {
+            for (const device of targetDevices) {
                 // approximate daily usage
                 const dailyEnergy = calculateDailyEnergy(device) * randomFactor;
-                const dailyCost = calculateDailyCost(device) * randomFactor;
+                const dailyCost = calculateDailyCost(device, rateToUse) * randomFactor;
+
+                // If it's a virtual device, we use a null device_id or handled gracefully by DB?
+                // The DB might require a valid device ID if foreign key exists. 
+                // However, the original code allowed null or random IDs. 
+                // Let's check Schema... "device_id uuid references devices" usually implies it must exist or be null.
+                // Safest to use NULL for virtual devices if they aren't in DB.
+                const deviceId = device.id.startsWith('virtual-') ? null : device.id;
 
                 logs.push({
                     user_id: userId,
-                    device_id: device.id, // Ensure this matches a real device ID if possible, or null
+                    device_id: deviceId,
                     energy_kwh: dailyEnergy,
                     cost: dailyCost,
                     timestamp: date.toISOString(),

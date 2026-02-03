@@ -13,7 +13,7 @@ import { toast } from 'sonner';
 
 const Dashboard = () => {
   const navigate = useNavigate();
-  const { devices, user } = useApp();
+  const { devices, user, checkAlerts } = useApp();
 
   const [timeRange, setTimeRange] = useState<'today' | 'week' | 'month'>('today');
   const [historyData, setHistoryData] = useState<DailyUsage[]>([]);
@@ -79,15 +79,13 @@ const Dashboard = () => {
     if (!user) return;
     setIsGenerating(true);
     try {
-      const success = await EnergyService.generateHistoricalData(user.id, devices);
+      const success = await EnergyService.generateHistoricalData(user.id, devices, user.electricityRate);
       if (success) {
-        toast.success("History generated! Switch to Week/Month view.");
-        if (timeRange !== 'today') fetchHistory();
+        toast.success("History regenerated with current settings!");
         if (timeRange !== 'today') fetchHistory();
         fetchMonthTotal(); // Refresh budget view too
         fetchTodayData(); // Refresh today's view if we generated data for today
-      } else {
-        toast.info("Data already exists or no devices found.");
+        checkAlerts(); // Check for alerts immediately
       }
     } catch (error) {
       toast.error("Failed to generate data");

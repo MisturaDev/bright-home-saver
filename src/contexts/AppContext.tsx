@@ -24,6 +24,7 @@ interface AppContextType {
   updateElectricityRate: (rate: number) => Promise<boolean>;
   updateBudget: (budget: number) => Promise<boolean>;
   updateNotificationSettings: (settings: Partial<User>) => Promise<boolean>;
+  checkAlerts: () => Promise<void>;
   isLoading: boolean;
 }
 
@@ -38,19 +39,19 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
   // Initialize Auth
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session?.user) {
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (user) {
         setUser({
-          id: session.user.id,
-          email: session.user.email || '',
-          name: session.user.user_metadata.name || session.user.email?.split('@')[0] || 'User',
-          electricityRate: session.user.user_metadata.electricity_rate,
-          budget: session.user.user_metadata.budget,
-          notificationsEnabled: session.user.user_metadata.notifications_enabled ?? true,
-          energyAlertsEnabled: session.user.user_metadata.energy_alerts_enabled ?? true,
-          highUsageThreshold: session.user.user_metadata.high_usage_threshold,
+          id: user.id,
+          email: user.email || '',
+          name: user.user_metadata.name || user.email?.split('@')[0] || 'User',
+          electricityRate: user.user_metadata.electricity_rate,
+          budget: user.user_metadata.budget,
+          notificationsEnabled: user.user_metadata.notifications_enabled ?? true,
+          energyAlertsEnabled: user.user_metadata.energy_alerts_enabled ?? true,
+          highUsageThreshold: user.user_metadata.high_usage_threshold,
         });
-        fetchDevices(session.user.id);
+        fetchDevices(user.id);
       } else {
         setUser(null);
         setDevices([]);
@@ -88,13 +89,13 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     if (user) {
       refreshNotifications();
       // Run checks
-      runNotificationChecks();
+      checkAlerts();
     } else {
       setNotifications([]);
     }
   }, [user?.id, user?.budget, user?.electricityRate, user?.notificationsEnabled, user?.energyAlertsEnabled, user?.highUsageThreshold]); // Re-run if user settings change
 
-  const runNotificationChecks = async () => {
+  const checkAlerts = async () => {
     if (!user) return;
     try {
       // 1. Check Budget
@@ -110,8 +111,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       const todayUsage = await EnergyService.getDailyUsage(user.id, user.id, 1);
       if (todayUsage.length > 0) {
         // Use user defined threshold or default to 20
-        const threshold = user.highUsageThreshold || 20;
-        await NotificationService.checkUsageHigh(user.id, todayUsage[todayUsage.length - 1].energy, threshold);
+        // const threshold = user.highUsageThreshold || 20;
+        // await NotificationService.checkUsageHigh(user.id, todayUsage[todayUsage.length - 1].energy, threshold);
       }
 
 
@@ -364,6 +365,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         updateElectricityRate,
         updateBudget,
         updateNotificationSettings,
+        checkAlerts,
         isLoading,
       }}
     >

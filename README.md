@@ -80,6 +80,13 @@ Bright Home Energy Saver is a smart home application that helps users monitor an
 | ![Alerts Screen](screenshots/Alerts.jpeg) | ![Settings Screen](screenshots/Settings.jpeg) |
 
 
+### Dark Mode
+
+| Home | Alerts |
+|------|--------|
+| ![Dark Home](screenshots/DarkHome.jpeg) | ![Dark Settingss](screenshots/DarkSettings.jpeg) |
+
+
 ---
 
 

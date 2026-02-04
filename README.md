@@ -1,7 +1,6 @@
 # Bright Home Energy Saver 
 
-Bright Home Energy Saver is a smart home project designed to help users monitor and optimize their energy consumption. It provides insights into energy usage, promotes efficient energy practices and helps reduce electricity costs all in a sleek, easy-to-use interface.
-
+Bright Home Energy Saver is a smart home application that helps users monitor and optimize energy consumption. The app provides real-time insights, interactive charts and alerts, promoting efficient energy practices and helping reduce electricity costs, all through a sleek, user-friendly interface.
 
 ## Features
 
@@ -20,15 +19,23 @@ Bright Home Energy Saver is a smart home project designed to help users monitor 
 
 ## Tech Stack
 
-**Frontend:** React (v18), TypeScript, Vite  
-**Backend:** Supabase  
-**UI & Styling:** Tailwind CSS, Shadcn/UI, Radix UI  
-**Charts & Data Visualization:** Recharts  
-**State Management & Data Fetching:** React state/hooks, TanStack Query (React Query)  
-**Routing:** React Router DOM  
-**Forms & Validation:** React Hook Form, Zod  
-**Utilities:** date-fns, next-themes, Vite Plugin PWA  
-**Deployment:** Vercel
+- **Frontend:** React (v18), TypeScript, Vite  
+
+- **Backend:** Supabase  
+
+- **UI & Styling:** Tailwind CSS, Shadcn/UI, Radix UI  
+
+- **Charts & Data Visualization:** Recharts  
+
+- **State Management & Data Fetching:** React state/hooks, TanStack Query (React Query)  
+
+- **Routing:** React Router DOM  
+
+- **Forms & Validation:** React Hook Form, Zod  
+
+- **Utilities:** date-fns, next-themes, Vite Plugin PWA  
+
+- **Deployment:** Vercel
 
 
 ---

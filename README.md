@@ -59,7 +59,13 @@ Bright Home Energy Saver is a smart home project designed to help users monitor 
 
 ## Screenshots 
 
-coming soon...
+| Home Screen | Devices Screen |
+|------------|----------------|
+| ![Home Screen](screenshots/Home.jpeg) | ![Devices Screen](screenshots/Devices.jpeg) |
+
+| Alerts Screen | Settings Screen |
+|---------------|-----------------|
+| ![Alerts Screen](screenshots/Alerts.jpeg) | ![Settings Screen](screenshots/Settings.jpeg) |
 
 
 ---

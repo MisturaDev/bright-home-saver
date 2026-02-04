@@ -1,6 +1,7 @@
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { ThemeProvider } from "@/components/theme-provider";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AppProvider, useApp } from "@/contexts/AppContext";
@@ -45,15 +46,17 @@ const AppRoutes = () => (
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <AppProvider>
-          <div className="max-w-lg mx-auto min-h-screen bg-background">
-            <AppRoutes />
-          </div>
-        </AppProvider>
-      </BrowserRouter>
+      <ThemeProvider defaultTheme="light" storageKey="vite-ui-theme" attribute="class">
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <AppProvider>
+            <div className="max-w-lg mx-auto min-h-screen bg-background">
+              <AppRoutes />
+            </div>
+          </AppProvider>
+        </BrowserRouter>
+      </ThemeProvider>
     </TooltipProvider>
   </QueryClientProvider>
 );

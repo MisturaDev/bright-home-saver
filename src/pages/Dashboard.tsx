@@ -5,7 +5,8 @@ import { useApp } from '@/contexts/AppContext';
 import { calculateDailyEnergy, calculateDailyCost, formatCurrency, formatEnergy, getDeviceIcon, generateHourlyUsage, ELECTRICITY_RATE } from '@/lib/energy-data';
 import { EnergyService, DailyUsage } from '@/services/EnergyService';
 import { AreaChart, Area, XAxis, YAxis, ResponsiveContainer, Tooltip, CartesianGrid } from 'recharts';
-import { Zap, TrendingUp, ChevronRight, BarChart3, Calendar, Database } from 'lucide-react';
+import { Zap, TrendingUp, ChevronRight, BarChart3, Calendar, Database, Sun, Moon } from 'lucide-react';
+import { useTheme } from "next-themes";
 import BottomNav from '@/components/BottomNav';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
@@ -14,6 +15,7 @@ import { toast } from 'sonner';
 const Dashboard = () => {
   const navigate = useNavigate();
   const { devices, user, checkAlerts } = useApp();
+  const { theme, setTheme } = useTheme();
 
   const [timeRange, setTimeRange] = useState<'today' | 'week' | 'month'>('today');
   const [historyData, setHistoryData] = useState<DailyUsage[]>([]);
@@ -134,6 +136,19 @@ const Dashboard = () => {
             >
               <Database className={`w-5 h-5 ${isGenerating ? 'animate-pulse' : ''}`} />
             </Button>
+
+            <Button
+              variant="ghost"
+              size="icon"
+              className="w-10 h-10 bg-primary-foreground/10 hover:bg-primary-foreground/20 text-primary-foreground rounded-full"
+              onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+              title="Toggle Theme"
+            >
+              <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+              <Moon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+              <span className="sr-only">Toggle theme</span>
+            </Button>
+
             <div className="w-10 h-10 bg-primary-foreground/20 rounded-full flex items-center justify-center">
               <Zap className="w-5 h-5 text-primary-foreground" />
             </div>

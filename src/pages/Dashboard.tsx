@@ -12,6 +12,14 @@ import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { toast } from 'sonner';
 
+const getGreeting = () => {
+  const hour = new Date().getHours();
+  if (hour < 12) return "Good morning 🌅";
+  if (hour < 17) return "Good afternoon ☀️";
+  if (hour < 21) return "Good evening 🌇";
+  return "Good night 🌙";
+};
+
 const Dashboard = () => {
   const navigate = useNavigate();
   const { devices, user, checkAlerts } = useApp();
@@ -122,7 +130,7 @@ const Dashboard = () => {
       <div className="bg-gradient-primary px-6 pt-8 pb-12 rounded-b-3xl">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <p className="text-primary-foreground/80 text-sm">Good morning</p>
+            <p className="text-primary-foreground/80 text-sm">{getGreeting()}</p>
             <h1 className="text-xl font-bold text-primary-foreground">{user?.name || 'User'}</h1>
           </div>
           <div className="flex gap-2">

@@ -92,33 +92,116 @@ export const defaultNotifications: Notification[] = [
   },
 ];
 
-export const energyTips = [
-  {
-    title: 'Switch to LED Bulbs',
-    description: 'LED bulbs use up to 75% less energy than incandescent bulbs and last 25 times longer.',
-    savings: 'Save up to ₦2,000/month',
-  },
-  {
-    title: 'Optimize AC Usage',
-    description: 'Set your AC to 24°C instead of 18°C. Each degree lower can increase energy use by 6%.',
-    savings: 'Save up to ₦3,500/month',
-  },
-  {
-    title: 'Unplug Idle Devices',
-    description: 'Standby power can account for 5-10% of your electricity bill. Unplug chargers and appliances when not in use.',
-    savings: 'Save up to ₦800/month',
-  },
-  {
-    title: 'Use Natural Light',
-    description: 'Open curtains during the day to reduce the need for artificial lighting.',
-    savings: 'Save up to ₦500/month',
-  },
-  {
-    title: 'Regular Maintenance',
-    description: 'Clean AC filters monthly and defrost your fridge regularly for optimal efficiency.',
-    savings: 'Save up to ₦1,200/month',
-  },
-];
+export interface DynamicTip {
+  title: string;
+  description: string;
+  savings: string;
+  savingsAmount: number;
+  type: 'ac' | 'light' | 'wifi' | 'general' | 'fan' | 'tv';
+}
+
+export const generateDynamicTips = (devices: Device[], electricityRate: number = ELECTRICITY_RATE): DynamicTip[] => {
+  const tips: DynamicTip[] = [];
+
+  // 1. AC Savings
+  const acs = devices.filter(d => d.type === 'ac');
+  if (acs.length > 0) {
+    const totalAcPower = acs.reduce((sum, d) => sum + d.powerRating, 0);
+    // Suggest reducing usage by 1 hour/day or raising temp (approx 10% savings)
+    // Conservative est: 1 hour less per day
+    const dailySavingkWh = (totalAcPower * 1) / 1000;
+    const monthlySaving = dailySavingkWh * 30 * electricityRate;
+
+    tips.push({
+      title: 'Optimize AC Usage',
+      description: `Reducing usage of your ${acs.length} AC${acs.length > 1 ? 's' : ''} by just 1 hour/day can save significant energy.`,
+      savings: `Save up to ${formatCurrency(monthlySaving)}/month`,
+      savingsAmount: monthlySaving,
+      type: 'ac'
+    });
+  }
+
+  // 2. Lighting
+  const lights = devices.filter(d => d.type === 'lights');
+  if (lights.length > 0) {
+    const totalLightPower = lights.reduce((sum, d) => sum + d.powerRating, 0);
+    // Turn off when leaving room - assume 2 hours saved/day total
+    const dailySavingkWh = (totalLightPower * 2) / 1000;
+    const monthlySaving = dailySavingkWh * 30 * electricityRate;
+
+    tips.push({
+      title: 'Switch to LED & Turn Off',
+      description: 'Turn off lights when leaving rooms and switch to energy-efficient LEDs.',
+      savings: `Save up to ${formatCurrency(monthlySaving)}/month`,
+      savingsAmount: monthlySaving,
+      type: 'light'
+    });
+  }
+
+  // 3. Fans
+  const fans = devices.filter(d => d.type === 'fan');
+  if (fans.length > 0) {
+    const totalFanPower = fans.reduce((sum, d) => sum + d.powerRating, 0);
+    // Reduce speed or turn off - assume 2 hours
+    const dailySavingkWh = (totalFanPower * 2) / 1000;
+    const monthlySaving = dailySavingkWh * 30 * electricityRate;
+
+    tips.push({
+      title: 'Use Fans Wisely',
+      description: 'Use fans only when rooms are occupied. They cool people, not rooms.',
+      savings: `Save up to ${formatCurrency(monthlySaving)}/month`,
+      savingsAmount: monthlySaving,
+      type: 'fan'
+    });
+  }
+
+  // 4. Standby Power (General Phantom Load)
+  // Assume 5-10% of total non-fridge energy is standby/wasted if not managed
+  const capableOfStandby = devices.filter(d => d.type === 'tv' || d.type === 'other' || d.type === 'ac');
+
+  if (capableOfStandby.length > 0) {
+    // Let's assume standby is ~10W per device on average for 20 hours.
+    const dailyStandbykWh = (capableOfStandby.length * 10 * 20) / 1000;
+    const monthlySaving = dailyStandbykWh * 30 * electricityRate;
+
+    tips.push({
+      title: 'Unplug Idle Electronics',
+      description: 'TVs, chargers, and microwaves consume power even when off. Unplug them.',
+      savings: `Save up to ${formatCurrency(monthlySaving)}/month`,
+      savingsAmount: monthlySaving,
+      type: 'general'
+    });
+  }
+
+  // 5. Fridge (Maintenance)
+  const fridges = devices.filter(d => d.type === 'fridge');
+  if (fridges.length > 0) {
+    const totalFridgePower = fridges.reduce((sum, d) => sum + d.powerRating, 0);
+    const monthlyConsumption = (totalFridgePower * 24 * 30) / 1000;
+    const monthlySaving = monthlyConsumption * 0.10 * electricityRate;
+
+    tips.push({
+      title: 'Fridge Maintenance',
+      description: 'Keep coils clean and defrost regularly to maintain efficiency.',
+      savings: `Save up to ${formatCurrency(monthlySaving)}/month`,
+      savingsAmount: monthlySaving,
+      type: 'general'
+    });
+  }
+
+  // If no tips (no devices), add a starter tip
+  if (tips.length === 0) {
+    tips.push({
+      title: 'Add Devices',
+      description: 'Add your home appliances to see personalized energy saving tips here.',
+      savings: 'Save money',
+      savingsAmount: 0,
+      type: 'general'
+    });
+  }
+
+  return tips.sort((a, b) => b.savingsAmount - a.savingsAmount);
+};
 
 export const generateHourlyUsage = (devices: Device[]) => {
   const hours = Array.from({ length: 24 }, (_, i) => i);

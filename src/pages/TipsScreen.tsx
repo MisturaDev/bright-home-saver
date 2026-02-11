@@ -1,11 +1,31 @@
+import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
-import { energyTips } from '@/lib/energy-data';
-import { ArrowLeft, Lightbulb, TrendingDown } from 'lucide-react';
+import { generateDynamicTips, formatCurrency } from '@/lib/energy-data';
+import { useApp } from '@/contexts/AppContext';
+import { ArrowLeft, Lightbulb, TrendingDown, Fan, Tv, Zap } from 'lucide-react';
 import BottomNav from '@/components/BottomNav';
 
 const TipsScreen = () => {
   const navigate = useNavigate();
+  const { devices, user } = useApp();
+
+  const tips = useMemo(() => {
+    return generateDynamicTips(devices, user?.electricityRate);
+  }, [devices, user?.electricityRate]);
+
+  const totalPotentialSavings = useMemo(() => {
+    return tips.reduce((sum, tip) => sum + tip.savingsAmount, 0);
+  }, [tips]);
+
+  const getIcon = (type: string) => {
+    switch (type) {
+      case 'ac': return <Lightbulb className="w-5 h-5 text-primary-foreground" />; // keeping lightbulb for now or swap to specific
+      case 'fan': return <Fan className="w-5 h-5 text-primary-foreground" />;
+      case 'tv': return <Tv className="w-5 h-5 text-primary-foreground" />;
+      default: return <Zap className="w-5 h-5 text-primary-foreground" />;
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background pb-24">
@@ -17,29 +37,29 @@ const TipsScreen = () => {
           </button>
           <h1 className="text-xl font-bold text-primary-foreground">Energy Saving Tips</h1>
         </div>
-        
+
         <div className="flex items-center gap-4 bg-primary-foreground/20 rounded-2xl p-4">
           <div className="w-14 h-14 bg-primary-foreground/20 rounded-xl flex items-center justify-center">
             <TrendingDown className="w-7 h-7 text-primary-foreground" />
           </div>
           <div>
             <p className="text-primary-foreground font-semibold">Potential Monthly Savings</p>
-            <p className="text-2xl font-bold text-primary-foreground">Up to ₦8,000</p>
+            <p className="text-2xl font-bold text-primary-foreground">Up to {formatCurrency(totalPotentialSavings)}</p>
           </div>
         </div>
       </div>
 
       <div className="px-6 -mt-4 space-y-4">
-        {energyTips.map((tip, index) => (
-          <Card 
-            key={tip.title}
+        {tips.map((tip, index) => (
+          <Card
+            key={index}
             className="animate-slide-up"
             style={{ animationDelay: `${index * 50}ms` }}
           >
             <CardContent className="p-5">
               <div className="flex items-start gap-4">
                 <div className="w-10 h-10 bg-gradient-primary rounded-xl flex items-center justify-center flex-shrink-0">
-                  <Lightbulb className="w-5 h-5 text-primary-foreground" />
+                  {getIcon(tip.type)}
                 </div>
                 <div className="flex-1">
                   <h3 className="font-bold text-foreground mb-1">{tip.title}</h3>

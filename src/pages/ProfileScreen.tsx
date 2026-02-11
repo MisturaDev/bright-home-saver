@@ -12,10 +12,12 @@ import BottomNav from '@/components/BottomNav';
 const ProfileScreen = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { user, logout, devices, updateElectricityRate, updateBudget, updateNotificationSettings } = useApp();
+  const { user, logout, devices, updateElectricityRate, updateBudget, updateName, updateNotificationSettings } = useApp();
+  const [name, setName] = useState(user?.name || '');
   const [rate, setRate] = useState(user?.electricityRate?.toString() || '70');
   const [budget, setBudget] = useState(user?.budget?.toString() || '0');
   const [threshold, setThreshold] = useState(user?.highUsageThreshold?.toString() || '20');
+  const [isEditingName, setIsEditingName] = useState(false);
   const [isEditingRate, setIsEditingRate] = useState(false);
   const [isEditingBudget, setIsEditingBudget] = useState(false);
   const [isEditingThreshold, setIsEditingThreshold] = useState(false);
@@ -33,6 +35,9 @@ const ProfileScreen = () => {
 
   // Update local state when user data loads
   useEffect(() => {
+    if (user?.name) {
+      setName(user.name);
+    }
     if (user?.electricityRate) {
       setRate(user.electricityRate.toString());
     }
@@ -43,6 +48,18 @@ const ProfileScreen = () => {
       setThreshold(user.highUsageThreshold.toString());
     }
   }, [user]);
+
+  const handleUpdateName = async () => {
+    if (!name.trim()) {
+      toast.error('Name cannot be empty');
+      return;
+    }
+
+    const success = await updateName(name);
+    if (success) {
+      setIsEditingName(false);
+    }
+  };
 
   const handleUpdateRate = async () => {
     const newRate = parseFloat(rate);
@@ -114,7 +131,29 @@ const ProfileScreen = () => {
                 <User className="w-8 h-8 text-primary-foreground" />
               </div>
               <div className="flex-1">
-                <h2 className="text-xl font-bold text-foreground">{user?.name || 'User'}</h2>
+                {isEditingName ? (
+                  <div className="flex items-center gap-2">
+                    <Input
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      className="h-8 w-40 bg-background"
+                      autoFocus
+                    />
+                    <Button size="icon" className="h-8 w-8" onClick={handleUpdateName}>
+                      <Check className="w-4 h-4" />
+                    </Button>
+                    <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => setIsEditingName(false)}>
+                      <X className="w-4 h-4" />
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <h2 className="text-xl font-bold text-foreground">{user?.name || 'User'}</h2>
+                    <Button variant="ghost" size="icon" className="h-6 w-6 text-muted-foreground hover:text-foreground" onClick={() => setIsEditingName(true)}>
+                      <Edit2 className="w-3 h-3" />
+                    </Button>
+                  </div>
+                )}
                 <div className="flex items-center gap-2 text-muted-foreground">
                   <Mail className="w-4 h-4" />
                   <span className="text-sm">{user?.email || 'user@example.com'}</span>

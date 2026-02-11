@@ -23,6 +23,7 @@ interface AppContextType {
 
   updateElectricityRate: (rate: number) => Promise<boolean>;
   updateBudget: (budget: number) => Promise<boolean>;
+  updateName: (name: string) => Promise<boolean>;
   updateNotificationSettings: (settings: Partial<User>) => Promise<boolean>;
   checkAlerts: () => Promise<void>;
   isLoading: boolean;
@@ -320,6 +321,27 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     }
   };
 
+  const updateName = async (name: string): Promise<boolean> => {
+    try {
+      const { data, error } = await supabase.auth.updateUser({
+        data: { name: name }
+      });
+
+      if (error) throw error;
+
+      if (data.user) {
+        setUser(prev => prev ? { ...prev, name: name } : null);
+        toast.success('Name updated');
+        return true;
+      }
+      return false;
+    } catch (error: any) {
+      console.error('Error updating name:', error);
+      toast.error('Failed to update name');
+      return false;
+    }
+  };
+
   const updateNotificationSettings = async (settings: Partial<User>): Promise<boolean> => {
     try {
       const updates: any = {};
@@ -364,6 +386,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         logout,
         updateElectricityRate,
         updateBudget,
+        updateName,
         updateNotificationSettings,
         checkAlerts,
         isLoading,

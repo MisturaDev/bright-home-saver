@@ -54,13 +54,13 @@ Bright Home Energy Saver is a smart home application that helps users monitor an
    ```
 
 3. **Set up Environment Variables**
-   Create a `.env` file in the root directory and add your Supabase credentials:
+   - Create a `.env` file in the root directory and add your Supabase credentials:
    ```env
     VITE_SUPABASE_URL=your_supabase_url
     VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
    ```
 
-4. **Run the development server**
+5. **Run the development server**
    ```bash
    npm run dev
    ```

@@ -1,7 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Zap, TrendingDown, Shield } from 'lucide-react';
-import logo from '@/assets/logo.png';
+import { Zap, TrendingDown, Shield, Home } from 'lucide-react';
 
 const WelcomeScreen = () => {
   const navigate = useNavigate();
@@ -17,7 +16,9 @@ const WelcomeScreen = () => {
       {/* Hero Section */}
       <div className="flex-1 flex flex-col items-center justify-center px-6 py-12">
         <div className="animate-float mb-8">
-          <img src={logo} alt="Smart Home Energy Saver" className="w-32 h-32 object-contain" />
+          <div className="w-32 h-32 rounded-3xl bg-gradient-primary flex items-center justify-center shadow-elevated">
+            <Home className="w-16 h-16 text-primary-foreground" aria-label="Smart Home Energy Saver logo" />
+          </div>
         </div>
         
         <h1 className="text-3xl font-bold text-foreground text-center mb-3">

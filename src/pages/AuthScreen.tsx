@@ -5,8 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { useApp } from '@/contexts/AppContext';
 import { toast } from 'sonner';
-import { Mail, Lock, User, ArrowLeft, Eye, EyeOff } from 'lucide-react';
-import logo from '@/assets/logo.png';
+import { Mail, Lock, User, ArrowLeft, Eye, EyeOff, Home } from 'lucide-react';
 
 const AuthScreen = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -58,7 +57,9 @@ const AuthScreen = () => {
       </button>
 
       <div className="flex-1 flex flex-col items-center justify-center">
-        <img src={logo} alt="Logo" className="w-20 h-20 object-contain mb-6" />
+        <div className="w-20 h-20 rounded-2xl bg-gradient-primary flex items-center justify-center shadow-elevated mb-6">
+          <Home className="w-10 h-10 text-primary-foreground" aria-label="Smart Home logo" />
+        </div>
 
         <Card className="w-full max-w-sm border-0 shadow-elevated">
           <CardHeader className="text-center pb-2">
